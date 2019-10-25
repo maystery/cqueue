@@ -8,7 +8,7 @@ import (
 	"github.com/RichardKnop/machinery/v1"
 	"github.com/RichardKnop/machinery/v1/config"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/lpds-public/cqueue/tasks"
+	"github.com/maystery/cqueue/tasks"
 )
 
 var (

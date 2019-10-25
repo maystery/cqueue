@@ -3,12 +3,10 @@ package tasks
 import (
 	"bytes"
 	"encoding/json"
-	"io"
-	"io/ioutil"
 	"os/exec"
 
-	"gitlab.com/lpds-public/cqueue/pkg/common"
-	"gitlab.com/lpds-public/cqueue/pkg/docker"
+	"github.com/maystery/cqueue/pkg/common"
+	"github.com/maystery/cqueue/pkg/docker"
 )
 
 func RunDocker(arg string) (result string, err error) {

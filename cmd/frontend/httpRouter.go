@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/lpds-public/cqueue/pkg/common"
+	"github.com/maystery/cqueue/pkg/common"
 )
 
 func push(machineryServer *machinery.Server, task string) (string, bool) {

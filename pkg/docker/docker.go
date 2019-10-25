@@ -4,12 +4,12 @@ import (
 	"context"
 	"io"
 	"io/ioutil"
-	"time"
+
+	"github.com/maystery/cqueue/pkg/common"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-	"gitlab.com/lpds-public/cqueue/pkg/common"
 )
 
 type Docker struct {
@@ -19,7 +19,7 @@ type Docker struct {
 
 func NewDockerCLI() (dockerCli *Docker, err error) {
 	// cli, err := client.NewEnvClient()
-	cli, err := client.NewClientWithOpts(client.FromEnv,client.WithAPIVersionNegotiation())
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	dockerCli = &Docker{
 		ctx: context.Background(),
 		cli: cli,

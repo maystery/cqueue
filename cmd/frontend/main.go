@@ -9,7 +9,7 @@ import (
 	"github.com/RichardKnop/machinery/v1/config"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/lpds-public/cqueue/tasks"
+	"github.com/maystery/cqueue/tasks"
 )
 
 func main() {
