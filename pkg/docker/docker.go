@@ -60,9 +60,9 @@ func (docker *Docker) ContainerLaunch(task common.Task) (id string, err error) {
 
 	statusCh, errCh := docker.cli.ContainerWait(docker.ctx, resp.ID, container.WaitConditionNotRunning)
 	select {
-	case <-done:
-		return resp.ID, nil
 	case <-statusCh:
+		return resp.ID, nil
+	case <-errCh:
 		return "", <-errCh
 	}
 }

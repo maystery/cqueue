@@ -8,8 +8,8 @@ import (
 	machinery "github.com/RichardKnop/machinery/v1"
 	"github.com/RichardKnop/machinery/v1/config"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"github.com/maystery/cqueue/tasks"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
