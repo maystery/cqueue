@@ -1,3 +1,10 @@
-FROM ubuntu
-ADD bin/frontend /
-ENTRYPOINT ["/frontend"]
+# build stage
+FROM golang:buster AS build-env
+COPY . /src
+WORKDIR /src/cmd/frontend
+RUN GOOS=linux go build frontend.go httpRouter.go
+
+# final stage
+FROM debian:buster
+COPY --from=build-env /src/cmd/frontend/frontend /bin/
+ENTRYPOINT ["frontend", "$@"]

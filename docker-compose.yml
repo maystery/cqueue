@@ -17,3 +17,24 @@ services:
     ports:
       - "6379:6379"
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - BROKER=amqp://guest:guest@rabbitmq:5672
+      - RESULT_BACKEND=amqp://guest:guest@rabbitmq:5672
+    restart: always
+    depends_on:
+      - frontend
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    environment:
+      - BROKER=amqp://guest:guest@rabbitmq:5672
+      - RESULT_BACKEND=amqp://guest:guest@rabbitmq:5672
+    restart: always
+    ports:
+      - "8080:8080"

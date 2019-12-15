@@ -7,8 +7,8 @@ import (
 
 	"github.com/RichardKnop/machinery/v1"
 	"github.com/RichardKnop/machinery/v1/config"
+	tsk "github.com/maystery/cqueue/tasks"
 	log "github.com/sirupsen/logrus"
-	"github.com/maystery/cqueue/tasks"
 )
 
 var (
@@ -16,6 +16,7 @@ var (
 	concurrency = flag.Int("concurrency", 1, "Number of concurrent workers")
 	instanceTag = flag.Int("tag", -1, "Tag of the worker instance")
 	timeout     = flag.Duration("timeout", 0, "Exit after timeout")
+	batch       = flag.Bool("batch", false, "Batch worker")
 )
 
 func main() {
@@ -46,9 +47,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Register tasks
-	tasks := map[string]interface{}{
-		"run_docker": tasks.RunDocker,
+	var tasks map[string]interface{}
+	if *batch {
+		tasks = map[string]interface{}{
+			"run_local": tsk.RunLocal,
+		}
+	} else {
+		// Register tasks
+		tasks = map[string]interface{}{
+			"run_docker": tsk.RunDocker,
+		}
 	}
 
 	err = machineryServer.RegisterTasks(tasks)

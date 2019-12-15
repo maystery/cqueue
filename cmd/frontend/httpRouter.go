@@ -4,18 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
 	machinery "github.com/RichardKnop/machinery/v1"
 	"github.com/RichardKnop/machinery/v1/tasks"
 	"github.com/gin-gonic/gin"
+	"github.com/maystery/cqueue/pkg/common"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	"github.com/maystery/cqueue/pkg/common"
 )
 
-func push(machineryServer *machinery.Server, task string) (string, bool) {
+func push(machineryServer *machinery.Server, task string, batch bool) (string, bool) {
 	signature := &tasks.Signature{
-		Name: "run_docker",
 		Args: []tasks.Arg{
 			{
 				Type:  "string",
@@ -23,9 +24,14 @@ func push(machineryServer *machinery.Server, task string) (string, bool) {
 			},
 		},
 	}
+	if batch {
+		signature.Name = "run_local"
+	} else {
+		signature.Name = "run_docker"
+	}
 	asyncResult, err := machineryServer.SendTask(signature)
 	if err != nil {
-		log.Debugf("Could not register new task: %s", err.Error())
+		log.Printf("Could not register new task: %s", err.Error())
 		return "Could not register new task", false
 	}
 	return asyncResult.Signature.UUID, true
@@ -35,6 +41,7 @@ func push(machineryServer *machinery.Server, task string) (string, bool) {
 func NewHTTPRouter(machineryServer *machinery.Server) (router *gin.Engine) {
 
 	router = gin.New()
+	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
 	router.GET("/", func(c *gin.Context) {
@@ -50,13 +57,21 @@ func NewHTTPRouter(machineryServer *machinery.Server) (router *gin.Engine) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			resp, ok := push(machineryServer, string(taskStr))
+			var resp string
+			var ok bool
+			if strings.EqualFold(task.Type, "batch") {
+				log.Printf("batch: true")
+				resp, ok = push(machineryServer, string(taskStr), true)
+			} else {
+				log.Printf("batch: false")
+				resp, ok = push(machineryServer, string(taskStr), false)
+			}
 			if ok {
 				c.JSON(http.StatusOK, gin.H{"id": resp})
-				log.Debugf("New task %s registered", taskStr)
+				log.Printf("%v - New task %s registered", time.Now().Format(time.StampMilli), taskStr)
 			} else {
 				c.JSON(http.StatusPreconditionFailed, gin.H{"status": resp})
-				log.Debugf("Error! Response: %s", resp)
+				log.Printf("%v - Error! Response: %s", time.Now().Format(time.StampMilli), resp)
 			}
 		}
 	})
@@ -67,12 +82,13 @@ func NewHTTPRouter(machineryServer *machinery.Server) (router *gin.Engine) {
 		backend := machineryServer.GetBackend()
 		state, err := backend.GetState(id)
 		if err != nil {
-			log.Debug("Task %s not found", id)
 			c.JSON(http.StatusNotFound, gin.H{"status": "Task not found"})
+			log.Printf("%v - Task %s not found", time.Now().Format(time.StampMilli), id)
 			return
 		}
-		log.Debug("Task %s not found", id)
 		c.JSON(http.StatusFound, gin.H{"status": state.State})
+		log.Printf("%v - Task %s state: %s", time.Now().Format(time.StampMilli), id, state.State)
+
 	})
 
 	// Get result, e.g curl http://localhost:8080/task/$taskID/result
@@ -81,8 +97,8 @@ func NewHTTPRouter(machineryServer *machinery.Server) (router *gin.Engine) {
 		backend := machineryServer.GetBackend()
 		state, err := backend.GetState(id)
 		if err != nil {
-			log.Debug("Task %s not found", id)
 			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+			log.Printf("%v - Task %s not found", time.Now().Format(time.StampMilli), id)
 			return
 		}
 

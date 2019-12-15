@@ -1,3 +1,11 @@
-FROM ubuntu
-ADD bin/worker /
-ENTRYPOINT ["/worker"]
+# build stage
+FROM golang:buster AS build-env
+COPY . /src
+WORKDIR /src/cmd/worker
+RUN GOOS=linux go build worker.go
+
+# final stage
+FROM debian:buster
+COPY --from=build-env /src/cmd/worker/worker /bin/
+ENTRYPOINT ["worker", "$@"]
+

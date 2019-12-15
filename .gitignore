@@ -29,3 +29,7 @@
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 .history
+
+frontend
+worker
+.DS_Store

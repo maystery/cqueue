@@ -6,6 +6,8 @@ type Task struct {
 	Cmd           []string `form:"cmd" json:"cmd" binding:"required"`
 	ContainerName string   `form:"container_name" json:"container_name"`
 	Type          string   `form:"type" json:"type"`
+	Start         string   `form:"start" json:"start"`
+	Stop          string   `form:"stop" json:"stop"`
 }
 
 type ID struct {
