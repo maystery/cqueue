@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -14,6 +16,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
+
+type myForm struct {
+	Image string   `form:"image"`
+	Cmd   []string `form:"cmd"`
+	Type  string   `form:"type"`
+	Start string   `form:"start"`
+	Stop  string   `form:"stop"`
+}
 
 func push(machineryServer *machinery.Server, task string, batch bool) (string, bool) {
 	signature := &tasks.Signature{
@@ -37,16 +47,43 @@ func push(machineryServer *machinery.Server, task string, batch bool) (string, b
 	return asyncResult.Signature.UUID, true
 }
 
+func indexHandler(c *gin.Context) {
+	c.HTML(200, "form.html", nil)
+}
+
+func formHandler(c *gin.Context) {
+	var cqueueFrom myForm
+	c.Bind(&cqueueFrom)
+
+	url := "http://10.0.0.230:8080/task"
+	if cqueueFrom.Type == "normal" {
+		cqueueFrom.Type = ""
+	}
+	jsonStr, _ := json.Marshal(cqueueFrom)
+	//var jsonStr = []byte()
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error(err)
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	c.JSON(200, gin.H{"response": string(body)})
+}
+
 // NewHTTPRouter : Initiate new HTTP router
 func NewHTTPRouter(machineryServer *machinery.Server) (router *gin.Engine) {
 
 	router = gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+	router.LoadHTMLGlob("views/*")
 
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "Task failed"})
-	})
+	router.GET("/", indexHandler)
+	router.POST("/", formHandler)
 
 	//Push new task, e.g curl -H 'Content-Type: application/json' -X POST -d'{"image":"ubuntu", "cmd":["sleep", "30"], "env":["foo=bar","foo2=bar2"]}' http://localhost:8080/task
 	router.POST("/task", func(c *gin.Context) {
