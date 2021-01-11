@@ -49,7 +49,7 @@ func (docker *Docker) ContainerLaunch(task common.Task) (id string, err error) {
 		Env:   task.Env,
 	}
 
-	resp, err := docker.cli.ContainerCreate(docker.ctx, containerConfig, nil, nil, task.ContainerName)
+	resp, err := docker.cli.ContainerCreate(docker.ctx, containerConfig, nil, nil, nil, task.ContainerName)
 	if err != nil {
 		return "", err
 	}

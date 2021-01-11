@@ -52,14 +52,16 @@ func indexHandler(c *gin.Context) {
 }
 
 func formHandler(c *gin.Context) {
-	var cqueueFrom myForm
-	c.Bind(&cqueueFrom)
+	var cqueueForm myForm
+	c.Bind(&cqueueForm)
 
-	url := "http://10.0.0.230:8080/task"
-	if cqueueFrom.Type == "normal" {
-		cqueueFrom.Type = ""
+	url := "http://localhost:8080/task"
+	if cqueueForm.Type == "normal" {
+		cqueueForm.Type = ""
 	}
-	jsonStr, _ := json.Marshal(cqueueFrom)
+	cqueueForm.Cmd = strings.Split(cqueueForm.Cmd[0], " ")
+	//cqueueForm.Cmd = cqueueForm.Cmd[1].Split(' ')
+	jsonStr, _ := json.Marshal(cqueueForm)
 	//var jsonStr = []byte()
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")

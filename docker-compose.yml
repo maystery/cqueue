@@ -18,23 +18,31 @@ services:
       - "6379:6379"
 
   worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
+    image: sztakilpds/cqueue_worker:0.2.3
     environment:
       - BROKER=amqp://guest:guest@rabbitmq:5672
-      - RESULT_BACKEND=amqp://guest:guest@rabbitmq:5672
+      - RESULT_BACKEND=redis://redis:6379
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    depends_on:
+      - frontend
+
+  worker2:
+    image: sztakilpds/cqueue_worker:0.2.3
+    environment:
+      - BROKER=amqp://guest:guest@rabbitmq:5672
+      - RESULT_BACKEND=redis://redis:6379
+    command: --batch=true
     restart: always
     depends_on:
       - frontend
 
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
+    image: sztakilpds/cqueue_frontend:0.2.3
     environment:
       - BROKER=amqp://guest:guest@rabbitmq:5672
-      - RESULT_BACKEND=amqp://guest:guest@rabbitmq:5672
+      - RESULT_BACKEND=redis://redis:6379
     restart: always
     ports:
       - "8080:8080"

@@ -36,10 +36,10 @@ func RunLocal(arg string) (result string, err error) {
 
 		// There is no index field
 		if index == -1 {
-			result = "There is no index field"
+			result = "ERROR: There is no index field"
 			return
 		}
-		for iii := start - 1; iii < stop; iii++ {
+		for iii := start; iii < stop+1; iii++ {
 			buf := new(bytes.Buffer)
 			temp := make([]string, len(t.Cmd))
 			copy(temp, t.Cmd)
@@ -52,8 +52,9 @@ func RunLocal(arg string) (result string, err error) {
 			var output bytes.Buffer
 			cmd.Stdout = &output
 			err = cmd.Run()
-			result += strconv.Itoa(iii+1) + ": " + output.String()
+			result += strconv.Itoa(iii) + ": " + output.String()
 		}
+		result = result[:len(result)-1]
 		return
 	}
 	return
@@ -75,6 +76,7 @@ func RunDocker(arg string) (result string, err error) {
 		cmd.Stdout = &output
 		err = cmd.Run()
 		result = output.String()
+		result = result[:len(result)-1]
 		return
 	}
 
@@ -103,6 +105,6 @@ func RunDocker(arg string) (result string, err error) {
 	if err != nil {
 		return "", err
 	}
-	result = string(output)
+	result = string(output[8 : len(output)-1])
 	return
 }

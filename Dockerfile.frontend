@@ -1,10 +1,12 @@
 # build stage
-FROM golang:buster AS build-env
+FROM golang:alpine AS build-env
 COPY . /src
 WORKDIR /src/cmd/frontend
 RUN GOOS=linux go build frontend.go httpRouter.go
 
 # final stage
-FROM debian:buster
-COPY --from=build-env /src/cmd/frontend/frontend /bin/
-ENTRYPOINT ["frontend", "$@"]
+FROM alpine
+COPY --from=build-env /src/cmd/frontend/frontend /opt/
+COPY ./cmd/frontend/views /opt/views/
+WORKDIR /opt
+ENTRYPOINT ["/opt/frontend"]

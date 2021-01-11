@@ -1,11 +1,11 @@
 # build stage
-FROM golang:buster AS build-env
+FROM golang:alpine AS build-env
 COPY . /src
 WORKDIR /src/cmd/worker
 RUN GOOS=linux go build worker.go
 
 # final stage
-FROM debian:buster
-COPY --from=build-env /src/cmd/worker/worker /bin/
-ENTRYPOINT ["worker", "$@"]
+FROM alpine
+COPY --from=build-env /src/cmd/worker/worker /opt/
+ENTRYPOINT ["/opt/worker"]
 

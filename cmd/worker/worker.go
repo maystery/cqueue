@@ -35,7 +35,8 @@ func main() {
 	if *configPath != "" {
 		machineryConfig, err = config.NewFromYaml(*configPath, true)
 	} else {
-		machineryConfig, err = config.NewFromEnvironment(true)
+		machineryConfig, err = config.NewFromEnvironment()
+		machineryConfig.TLSConfig = nil
 	}
 	if err != nil {
 		log.Fatal(err)
@@ -77,4 +78,7 @@ func main() {
 	}
 
 	worker.Launch()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
